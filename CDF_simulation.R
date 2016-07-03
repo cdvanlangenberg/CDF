@@ -1,4 +1,4 @@
-# draft 1
+# draft 2
 
 list.packages <-
   c("permute", "plyr", "foreach", "doParallel", "binhf")
@@ -11,8 +11,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 30
-nperms <- 50
+nsims <- 100
+nperms <- 60
 
 typecode <- 1
 
