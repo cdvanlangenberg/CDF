@@ -1,4 +1,4 @@
-# setwd("my location")  
+# setwd("location")  
 
 list.packages <-
   c("permute", "plyr", "foreach", "doParallel", "binhf")
