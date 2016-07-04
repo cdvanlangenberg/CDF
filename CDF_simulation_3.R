@@ -1,3 +1,5 @@
+# setwd("location")  
+
 list.packages <-
   c("permute", "plyr", "foreach", "doParallel", "binhf")
 
@@ -34,11 +36,12 @@ set.seed(2311)
 pb <-
   txtProgressBar(min = 0, max = nsims, style = 3) # this is not usefull if processing parallel
 
-cores <- detectCores()
+cores <- detectCores() ## better to use this way
+#  cores <- 32  ## try increasing the cores when nsims and nperms are large
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
-system.time(foreach(zz = 1:nsims) %do% {
+foreach(zz = 1:nsims) %do% {
   sapply(list.packages, require, character.only = TRUE)
   
   setTxtProgressBar(pb, zz)
@@ -52,14 +55,8 @@ system.time(foreach(zz = 1:nsims) %do% {
   nsamp <- 5
   nobs <- 30
   big <- nsamp * nobs
-  
-  pairs <- data.frame(
-    pair = 1:nsamp ^ 2,
-    grp1 = rep(seq_len(nsamp), each = nsamp),
-    grp2 = rep(seq_len(nsamp) + nsamp, nsamp)
-  )
-  
-  
+  pairs <- nsamp^2
+
   ac.data <- data.frame(x.sim = rexp(big, mean.ac))
   ac.data <- within(ac.data, {
     cdf.ac.sim <- pexp(x.sim, mean.ac)
@@ -106,9 +103,9 @@ system.time(foreach(zz = 1:nsims) %do% {
   sub.combine <- sub.combine[order(sub.combine$sample),]
   
   sub.combine$pair <-
-    c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, 20, by = nsamp), each =
+    c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs-nsamp, by = nsamp), each =
                                                     big),
-      rep(1:nsamp, each = big) + rep(rep(seq(0, 20, by = nsamp), each = nobs), nsamp))
+      rep(1:nsamp, each = big) + rep(rep(seq(0, pairs-nsamp, by = nsamp), each = nobs), nsamp))
   
   sub.combine <-
     sub.combine[order(sub.combine$pair, sub.combine$x.sim),]
@@ -168,7 +165,7 @@ system.time(foreach(zz = 1:nsims) %do% {
             ifelse(rownum == rowcnt, 1, cdf.as.new)
           )
         )
-      cumsum = cumsum2 = cumsum2.max = change = change2 = NULL
+      #cumsum = cumsum2 = cumsum2.max = change = change2 = NULL
       cdf.diff <- cdf.as.new - cdf.ac.new
       abs.cdf.diff <- abs(cdf.diff)
       cdf.diffsq <- cdf.diff ^ 2
@@ -184,8 +181,6 @@ system.time(foreach(zz = 1:nsims) %do% {
       cm <- ave(cdf.diffsq, pair, FUN = sum)
       
     })
-  
-  
   
   # overall summary statistics for above pairs
   
@@ -206,6 +201,7 @@ system.time(foreach(zz = 1:nsims) %do% {
       }
     )
   
+  # write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
   
   # begin permutation loop
   
@@ -261,9 +257,9 @@ system.time(foreach(zz = 1:nsims) %do% {
       p.sub.combine <- p.sub.combine[order(p.sub.combine$sample), ]
       
       p.sub.combine$pair <-
-        c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, 20, by = nsamp), each =
+        c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs-nsamp, by = nsamp), each =
                                                         big),
-          rep(1:nsamp, each = big) + rep(rep(seq(0, 20, by = nsamp), each = nobs), nsamp))
+          rep(1:nsamp, each = big) + rep(rep(seq(0, pairs-nsamp, by = nsamp), each = nobs), nsamp))
       
       p.sub.combine <-
         p.sub.combine[order(p.sub.combine$pair, p.sub.combine$x.sim), ]
@@ -363,6 +359,7 @@ system.time(foreach(zz = 1:nsims) %do% {
   
   # stopCluster(cl)
   
+  # expand test stat to the same size (nperms X 4) of permutaions summary 
   test.stat <-
     apply(
       test.stat,
@@ -370,6 +367,8 @@ system.time(foreach(zz = 1:nsims) %do% {
       FUN = function(x)
         replicate(nperms, x)
     )
+  
+  # logical testing permutation results with test statistic 
   
   permute.results <- permute.results >= test.stat
   
@@ -387,7 +386,11 @@ system.time(foreach(zz = 1:nsims) %do% {
        1) / (nperms + 1)
   
   # print(pval.mean) ## to check calculation
-  
+
+  # if(file.exists("pval.csv")) file.remove("pval.csv") ## put this line before the big loop
+  # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
+  #             sep = ",", row.names = T,col.names = F, append = T)
+
   if (pval.mean[1] <= 0.05)
     ks.count.mean = ks.count.mean + 1
   if (pval.med[1] <= 0.05)
@@ -418,7 +421,7 @@ system.time(foreach(zz = 1:nsims) %do% {
   rm(combine, ac.data, as.data, sub.combine, test.result)
   gc()
   
-})
+}
 
 stopCluster(cl)
 close(pb)
