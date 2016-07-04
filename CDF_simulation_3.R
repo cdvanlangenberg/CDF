@@ -201,11 +201,11 @@ foreach(zz = 1:nsims) %do% {
       }
     )
   
-<<<<<<< HEAD
+
   # write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
-=======
+
   #write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
->>>>>>> 5b86c737bc577dfd1ba0973c5613b7c1c55fda0c
+
   
   # begin permutation loop
   
@@ -390,19 +390,16 @@ foreach(zz = 1:nsims) %do% {
        1) / (nperms + 1)
   
   # print(pval.mean) ## to check calculation
-<<<<<<< HEAD
 
   # if(file.exists("pval.csv")) file.remove("pval.csv") ## put this line before the big loop
   # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
   #             sep = ",", row.names = T,col.names = F, append = T)
 
-=======
   
   # if(file.exists("pval.csv")) file.remove("pval.csv")
   # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
               # sep = ",", row.names = T,col.names = F, append = T)
   
->>>>>>> 5b86c737bc577dfd1ba0973c5613b7c1c55fda0c
   if (pval.mean[1] <= 0.05)
     ks.count.mean = ks.count.mean + 1
   if (pval.med[1] <= 0.05)
