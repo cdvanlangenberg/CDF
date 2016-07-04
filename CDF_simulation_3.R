@@ -207,10 +207,6 @@ system.time(foreach(zz = 1:nsims) %do% {
     )
   
   
-  # summary.test.stat ## to print the summary of all pairs
-  
-  
-  
   # begin permutation loop
   
   # nperms <- 10
