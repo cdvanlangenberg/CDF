@@ -9,8 +9,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 200
-nperms <- 50
+nsims <- 20
+nperms <- 25
 
 typecode <- 1
 
@@ -91,11 +91,11 @@ foreach(zz = 1:nsims) %do% {
                 "cdf.ac.sim")] # this for just convenience of data visualization
   
   # pairwise summary
-test.result <-
+
+  test.result <-
                 foreach(ii = 1:nrow(pairs), .combine = rbind) %do% {
                   if (exists("sub.combine"))
                     rm(sub.combine)
-                  # ii=1
                   sub.combine <-
                     combine[combine$sample %in% c(pairs[ii, 2], pairs[ii, 3]), ]
                   
@@ -110,7 +110,8 @@ test.result <-
                       ifelse(is.na(cdf.ac.sim),
                              ave(shift(cdf, 1), cumsum, FUN = min),
                              cdf.ac.sim)
-                    cdf.ac.new <-
+                    
+                  cdf.ac.new <-
                       ifelse(cumsum == 0 & is.na(cdf.ac.sim), 0, cdf.ac.new)
                     cdf.ac.new <-
                       ifelse(cumsum == cumsum[2 * nobs] &
@@ -148,6 +149,7 @@ test.result <-
   # test.result  ## to print the results for a given iteration (zz)
   
   # overall summary statistics for above pairs
+
   
   test.stat <-
     apply(
@@ -329,8 +331,8 @@ test.result <-
   if (pval.max[3] <= 0.05)
     cm.count.max = cm.count.max + 1
   
-  #rm(combine, ac.data, as.data, sub.combine, test.result)
-  #gc()
+  rm(combine, ac.data, as.data, sub.combine, test.result)
+  gc()
   
 }
 
