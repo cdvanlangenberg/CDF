@@ -1,4 +1,4 @@
-# setwd("location")  
+# setwd("location")
 
 list.packages <-
   c("permute", "plyr", "foreach", "doParallel", "binhf")
@@ -11,8 +11,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 20
-nperms <- 20
+nsims <- 200
+nperms <- 100
 
 typecode <- 1
 
@@ -55,8 +55,8 @@ foreach(zz = 1:nsims) %do% {
   nsamp <- 5
   nobs <- 30
   big <- nsamp * nobs
-  pairs <- nsamp^2
-
+  pairs <- nsamp ^ 2
+  
   ac.data <- data.frame(x.sim = rexp(big, mean.ac))
   ac.data <- within(ac.data, {
     cdf.ac.sim <- pexp(x.sim, mean.ac)
@@ -100,15 +100,17 @@ foreach(zz = 1:nsims) %do% {
   sub.combine$sample <-
     as.numeric(levels(sub.combine$sample)[sub.combine$sample])
   
-  sub.combine <- sub.combine[order(sub.combine$sample),]
+  sub.combine <- sub.combine[order(sub.combine$sample), ]
   
   sub.combine$pair <-
-    c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs-nsamp, by = nsamp), each =
+    c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs - nsamp, by = nsamp), each =
                                                     big),
-      rep(1:nsamp, each = big) + rep(rep(seq(0, pairs-nsamp, by = nsamp), each = nobs), nsamp))
+      rep(1:nsamp, each = big) + rep(rep(seq(
+        0, pairs - nsamp, by = nsamp
+      ), each = nobs), nsamp))
   
   sub.combine <-
-    sub.combine[order(sub.combine$pair, sub.combine$x.sim),]
+    sub.combine[order(sub.combine$pair, sub.combine$x.sim), ]
   
   sub.combine <-
     within(sub.combine, {
@@ -165,7 +167,7 @@ foreach(zz = 1:nsims) %do% {
             ifelse(rownum == rowcnt, 1, cdf.as.new)
           )
         )
-      #cumsum = cumsum2 = cumsum2.max = change = change2 = NULL
+      cumsum = cumsum2 = cumsum2.max = change = change2 = NULL
       cdf.diff <- cdf.as.new - cdf.ac.new
       abs.cdf.diff <- abs(cdf.diff)
       cdf.diffsq <- cdf.diff ^ 2
@@ -201,11 +203,8 @@ foreach(zz = 1:nsims) %do% {
       }
     )
   
-
+  
   # write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
-
-  #write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
-
   
   # begin permutation loop
   
@@ -258,15 +257,17 @@ foreach(zz = 1:nsims) %do% {
       p.sub.combine$sample <-
         as.numeric(levels(p.sub.combine$sample)[p.sub.combine$sample])
       
-      p.sub.combine <- p.sub.combine[order(p.sub.combine$sample), ]
+      p.sub.combine <- p.sub.combine[order(p.sub.combine$sample),]
       
       p.sub.combine$pair <-
-        c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs-nsamp, by = nsamp), each =
+        c(rep(rep(1:nsamp, each = nobs), nsamp) + rep(seq(0, pairs - nsamp, by = nsamp), each =
                                                         big),
-          rep(1:nsamp, each = big) + rep(rep(seq(0, pairs-nsamp, by = nsamp), each = nobs), nsamp))
+          rep(1:nsamp, each = big) + rep(rep(seq(
+            0, pairs - nsamp, by = nsamp
+          ), each = nobs), nsamp))
       
       p.sub.combine <-
-        p.sub.combine[order(p.sub.combine$pair, p.sub.combine$x.sim), ]
+        p.sub.combine[order(p.sub.combine$pair, p.sub.combine$x.sim),]
       
       p.sub.combine <-
         within(p.sub.combine, {
@@ -363,7 +364,7 @@ foreach(zz = 1:nsims) %do% {
   
   # stopCluster(cl)
   
-  # expand test stat to the same size (nperms X 4) of permutaions summary 
+  # expand test stat to the same size (nperms X 4) of permutaions summary
   test.stat <-
     apply(
       test.stat,
@@ -372,33 +373,28 @@ foreach(zz = 1:nsims) %do% {
         replicate(nperms, x)
     )
   
-  # logical testing permutation results with test statistic 
+  # logical testing permutation results with test statistic
   
   permute.results <- permute.results >= test.stat
   
   pval.mean <-
-    (apply(X = permute.results[row.names(permute.results) == "mean", ], MARGIN = 2, FUN = sum) +
+    (apply(X = permute.results[row.names(permute.results) == "mean",], MARGIN = 2, FUN = sum) +
        1) / (nperms + 1)
   pval.med <-
-    (apply(X = permute.results[row.names(permute.results) == "median", ], MARGIN = 2, FUN = sum) +
+    (apply(X = permute.results[row.names(permute.results) == "median",], MARGIN = 2, FUN = sum) +
        1) / (nperms + 1)
   pval.95 <-
-    (apply(X = permute.results[row.names(permute.results) == "95%", ], MARGIN = 2, FUN = sum) +
+    (apply(X = permute.results[row.names(permute.results) == "95%",], MARGIN = 2, FUN = sum) +
        1) / (nperms + 1)
   pval.max <-
-    (apply(X = permute.results[row.names(permute.results) == "max", ], MARGIN = 2, FUN = sum) +
+    (apply(X = permute.results[row.names(permute.results) == "max",], MARGIN = 2, FUN = sum) +
        1) / (nperms + 1)
   
   # print(pval.mean) ## to check calculation
-
+  
   # if(file.exists("pval.csv")) file.remove("pval.csv") ## put this line before the big loop
   # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
   #             sep = ",", row.names = T,col.names = F, append = T)
-
-  
-  # if(file.exists("pval.csv")) file.remove("pval.csv")
-  # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
-              # sep = ",", row.names = T,col.names = F, append = T)
   
   if (pval.mean[1] <= 0.05)
     ks.count.mean = ks.count.mean + 1
@@ -428,7 +424,7 @@ foreach(zz = 1:nsims) %do% {
     cm.count.max = cm.count.max + 1
   
   rm(combine, ac.data, as.data, sub.combine, test.result)
-  gc()
+  invisible(gc())
   
 }
 
