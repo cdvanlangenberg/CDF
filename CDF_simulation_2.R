@@ -9,8 +9,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 20
-nperms <- 25
+nsims <- 200
+nperms <- 100
 
 typecode <- 1
 
@@ -38,6 +38,7 @@ cores <- detectCores()
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
+system.time(
 foreach(zz = 1:nsims) %do% {
   sapply(list.packages, require, character.only = TRUE)
   
@@ -335,7 +336,7 @@ foreach(zz = 1:nsims) %do% {
   gc()
   
 }
-
+)
 stopCluster(cl)
 close(pb)
 
