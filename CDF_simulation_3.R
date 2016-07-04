@@ -9,8 +9,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 200
-nperms <- 100
+nsims <- 20
+nperms <- 20
 
 typecode <- 1
 
@@ -34,11 +34,12 @@ set.seed(2311)
 pb <-
   txtProgressBar(min = 0, max = nsims, style = 3) # this is not usefull if processing parallel
 
-cores <- detectCores()
+cores <- detectCores() ## better to use this way
+#  cores <- 32  ## try increasing the cores when nsims and nperms are large
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
-system.time(foreach(zz = 1:nsims) %do% {
+foreach(zz = 1:nsims) %do% {
   sapply(list.packages, require, character.only = TRUE)
   
   setTxtProgressBar(pb, zz)
@@ -206,6 +207,7 @@ system.time(foreach(zz = 1:nsims) %do% {
       }
     )
   
+  #write.table(test.stat, "test.stat.csv", append = T, sep = " ", col.names = F, row.names = F)
   
   # begin permutation loop
   
@@ -388,6 +390,10 @@ system.time(foreach(zz = 1:nsims) %do% {
   
   # print(pval.mean) ## to check calculation
   
+  # if(file.exists("pval.csv")) file.remove("pval.csv")
+  # write.table(rbind(pval.mean, pval.med, pval.95, pval.max), "pval.csv",
+              # sep = ",", row.names = T,col.names = F, append = T)
+  
   if (pval.mean[1] <= 0.05)
     ks.count.mean = ks.count.mean + 1
   if (pval.med[1] <= 0.05)
@@ -418,7 +424,7 @@ system.time(foreach(zz = 1:nsims) %do% {
   rm(combine, ac.data, as.data, sub.combine, test.result)
   gc()
   
-})
+}
 
 stopCluster(cl)
 close(pb)
