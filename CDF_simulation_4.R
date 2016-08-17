@@ -11,8 +11,8 @@ if (length(new.packages))
 # Load packages into session
 sapply(list.packages, require, character.only = TRUE)
 
-nsims <- 200
-nperms <- 100
+nsims <- 100
+nperms <- 200
 
 typecode <- 1
 
@@ -52,7 +52,7 @@ foreach(zz = 1:nsims) %do% {
   # generate random deviates from an exponential distribution
   mean.as <- 0.2
   mean.ac <- 0.2
-  nsamp <- 5
+  nsamp <- 3
   nobs <- 30
   big <- nsamp * nobs
   pairs <- nsamp ^ 2
@@ -402,7 +402,7 @@ foreach(zz = 1:nsims) %do% {
     ks.count.med = ks.count.med + 1
   if (pval.95[1] <= 0.05)
     ks.count.95 = ks.count.95 + 1
-  if (pval.max[3] <= 0.05)
+  if (pval.max[1] <= 0.05)
     ks.count.max = ks.count.max + 1
   
   if (pval.mean[2] <= 0.05)
