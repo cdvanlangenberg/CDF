@@ -12,7 +12,7 @@ if (length(new.packages))
 sapply(list.packages, require, character.only = TRUE)
 
 nsims <- 100
-nperms <- 200
+nperms <- 100
 
 typecode <- 1
 
@@ -52,7 +52,7 @@ foreach(zz = 1:nsims) %do% {
   # generate random deviates from an exponential distribution
   mean.as <- 0.2
   mean.ac <- 0.2
-  nsamp <- 3
+  nsamp <- 4
   nobs <- 30
   big <- nsamp * nobs
   pairs <- nsamp ^ 2
@@ -175,7 +175,7 @@ foreach(zz = 1:nsims) %do% {
       ks <- ave(abs.cdf.diff, pair, FUN = max)
       kp <-
         ave(
-          abs.cdf.diff,
+          cdf.diff,
           pair,
           FUN = function(x)
             (max(x) - min(x))
@@ -334,7 +334,7 @@ foreach(zz = 1:nsims) %do% {
           ks <- ave(abs.cdf.diff, pair, FUN = max)
           kp <-
             ave(
-              abs.cdf.diff,
+              cdf.diff,
               pair,
               FUN = function(x)
                 (max(x) - min(x))
@@ -365,7 +365,7 @@ foreach(zz = 1:nsims) %do% {
   # stopCluster(cl)
   
   # expand test stat to the same size (nperms X 4) of permutaions summary
-  test.stat <-
+  test.stat1 <-
     apply(
       test.stat,
       2,
@@ -375,7 +375,9 @@ foreach(zz = 1:nsims) %do% {
   
   # logical testing permutation results with test statistic
   
-  permute.results <- permute.results >= test.stat
+  permute.results1 <- permute.results
+  
+  permute.results <- permute.results >= test.stat1
   
   pval.mean <-
     (apply(X = permute.results[row.names(permute.results) == "mean",], MARGIN = 2, FUN = sum) +
@@ -423,7 +425,7 @@ foreach(zz = 1:nsims) %do% {
   if (pval.max[3] <= 0.05)
     cm.count.max = cm.count.max + 1
   
-  rm(combine, ac.data, as.data, sub.combine, test.result)
+  #rm(combine, ac.data, as.data, sub.combine, test.result)
   invisible(gc())
   
 }
@@ -444,25 +446,11 @@ cm.rej.med <- cm.count.med / nsims
 cm.rej.95 <- cm.count.95 / nsims
 cm.rej.max <- cm.count.max / nsims
 
+cat(" nsims : ", nsims, "nperms :", nperms, "nsamp :",nsamp, "nobs :",nobs)
+
+cat(" mean.ac :",mean.ac,"mean.as :",mean.as, "\n")
+
 cat(
-  " nsims :",
-  nsims,
-  "\n",
-  "nperms :",
-  nperms,
-  "\n",
-  "nsamp :",
-  nsamp,
-  "\n",
-  "nobs :",
-  nobs,
-  "\n",
-  "mean.ac :",
-  mean.ac,
-  "\n",
-  "mean.as :",
-  mean.as,
-  "\n",
   "ks.rej.mean :",
   ks.rej.mean,
   "\n",

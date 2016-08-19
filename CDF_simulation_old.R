@@ -7,6 +7,8 @@ if (length(new.packages))
   install.packages(new.packages)
 
 # Load packages into session
+#sink("C:/Users/sjricht2/Box Sync/Research/Distribution data/Simulation/sim_results new", append=TRUE, split=TRUE) 
+
 sapply(list.packages, require, character.only = TRUE)
 
 nsims <- 100
@@ -33,12 +35,7 @@ set.seed(2311)
 # start big loop
 pb <- txtProgressBar(min = 0, max = nsims, style = 3)
 
-  cores <- detectCores()
-  cl <- makeCluster(cores)
-  registerDoParallel(cl)
-  
-foreach(zz = 1:nsims) %dopar% {
-  sapply(list.packages, require, character.only = TRUE)
+foreach(zz = 1:nsims) %do% {
   setTxtProgressBar(pb, zz)
   
   if (exists(c("combine", "ac.data", "as.data")))
@@ -47,7 +44,7 @@ foreach(zz = 1:nsims) %dopar% {
   # generate random deviates from an exponential distribution
   mean.as <- 0.2
   mean.ac <- 0.2
-  nsamp <- 5
+  nsamp <- 3
   nobs <- 30
   big <- nsamp * nobs
   
@@ -98,7 +95,7 @@ foreach(zz = 1:nsims) %dopar% {
       sub.combine <-
         subset(combine, subset = combine$sample %in% c(pairs[ii, 2], pairs[ii, 3]))
       
-      sub.combine <- sub.combine[order(sub.combine$x.sim), ]
+      sub.combine <- sub.combine[order(sub.combine$x.sim),]
       
       sub.combine <- within(sub.combine, {
         change <- ifelse(groupcode == shift(groupcode, 1), 0, 1)
@@ -138,9 +135,8 @@ foreach(zz = 1:nsims) %dopar% {
       
       test.result  <- data.frame(
         ks = max(sub.combine$abs.cdf.diff),
-        kp = (
-          max(sub.combine$abs.cdf.diff) - min(sub.combine$abs.cdf.diff)
-        ),
+       # kp = max(sub.combine$cdf.diff) - min(sub.combine$cdf.diff),
+        kp = max(sub.combine$cdf.diff) - min(sub.combine$cdf.diff),
         cm = sum(sub.combine$cdf.diffsq)
       )
     }
@@ -217,7 +213,7 @@ foreach(zz = 1:nsims) %dopar% {
             subset(p.combine, subset = p.combine$sample %in% c(pairs[ii, 2], pairs[ii, 3]))
           
           p.sub.combine <-
-            p.sub.combine[order(p.sub.combine$x.sim), ]
+            p.sub.combine[order(p.sub.combine$x.sim),]
           
           p.sub.combine <- within(p.sub.combine, {
             change <- ifelse(groupcode == shift(groupcode, 1), 0, 1)
@@ -255,9 +251,8 @@ foreach(zz = 1:nsims) %dopar% {
           
           p.result  <- data.frame(
             ks.p = max(p.sub.combine$abs.cdf.diff),
-            kp.p = (
-              max(p.sub.combine$abs.cdf.diff) - min(p.sub.combine$abs.cdf.diff)
-            ),
+           # kp.p = max(p.sub.combine$cdf.diff) - min(sub.combine$cdf.diff),
+            kp.p = max(p.sub.combine$cdf.diff) - min(sub.combine$cdf.diff),
             cm.p = sum(p.sub.combine$cdf.diffsq)
           )
         }
@@ -345,13 +340,13 @@ foreach(zz = 1:nsims) %dopar% {
   if (cm.pval.max <= 0.05)
     cm.count.max = cm.count.max + 1
   
-  #rm(combine, ac.data, as.data, sub.combine, test.result)
-  #gc()
+  rm(combine, ac.data, as.data, sub.combine, test.result)
+  
+  
+ # gc()
   
 }
 
- stopCluster(cl)
- 
 close(pb)
 
 ks.rej.mean <- ks.count.mean / nsims
@@ -366,6 +361,15 @@ cm.rej.mean <- cm.count.mean / nsims
 cm.rej.med <- cm.count.med / nsims
 cm.rej.95 <- cm.count.95 / nsims
 cm.rej.max <- cm.count.max / nsims
+
+
+cat('nsims=', nsims, 'nperms=', nperms, fill=TRUE)
+cat('nsamp=',nsamp,' nobs=',nobs,fill=TRUE,append=TRUE)
+cat('mean.ac=', mean.ac, ' mean.as=', mean.as,fill=TRUE,append=TRUE)
+cat('ks.rej.mean=',ks.rej.mean,' ks.rej.med=',ks.rej.med,' ks.rej.95=',ks.rej.95,' ks.rej.max=',ks.rej.max, fill=TRUE,append=TRUE)
+cat('kp.rej.mean=',kp.rej.mean,' kp.rej.med=',kp.rej.med,' kp.rej.95=',kp.rej.95,' kp.rej.max=',kp.rej.max, fill=TRUE,append=TRUE)
+cat('cm.rej.mean=',cm.rej.mean,' cm.rej.med=',cm.rej.med,' cm.rej.95=',cm.rej.95,' cm.rej.max=',cm.rej.max, fill=TRUE,append=TRUE)
+cat(' ',fill=TRUE,append=TRUE)
 
 nsims
 nperms
